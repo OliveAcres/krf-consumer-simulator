@@ -384,6 +384,8 @@ const DEFAULT_FORMULATION: Formulation = {
   sugarG: 14,
   cogsPerUnit: 1.20,
   totalGrams: 58,
+  msrpPerBar: 3.49,
+  barCount: 12,
 };
 
 export default function Home() {
@@ -480,7 +482,20 @@ export default function Home() {
             <Slider label="Sugar" value={formulation.sugarG} onChange={(v) => update("sugarG", v)} min={0} max={25} step={1} unit="g" help="Must be \u2264 Carbs" />
             <hr className="my-4" />
             <Slider label="Total Weight" value={formulation.totalGrams} onChange={(v) => update("totalGrams", v)} min={20} max={100} step={1} unit="g" />
-            <Slider label="COGS per Unit" value={formulation.cogsPerUnit} onChange={(v) => update("cogsPerUnit", v)} min={0.30} max={3.00} step={0.05} unit="" help={`Implied retail: ~$${(formulation.cogsPerUnit * 2.8).toFixed(2)}`} />
+            <Slider label="COGS per Unit" value={formulation.cogsPerUnit} onChange={(v) => update("cogsPerUnit", v)}
+              min={0.10} max={3.00} step={0.05} unit="" help={`Margin: ${formulation.msrpPerBar > 0 ? (((formulation.msrpPerBar - formulation.cogsPerUnit) / formulation.msrpPerBar) * 100).toFixed(1) : 0}%`} />
+            <Slider label="MSRP per Bar" value={formulation.msrpPerBar} onChange={(v) => update("msrpPerBar", v)}
+              min={0.50} max={8.00} step={0.01} unit="" help={`${(formulation.msrpPerBar / formulation.cogsPerUnit).toFixed(1)}x markup on COGS`} />
+            <Slider label="Bar Count" value={formulation.barCount} onChange={(v) => update("barCount", v)}
+              min={1} max={48} step={1} unit=" bars" />
+
+            <div className="bg-gray-50 rounded-lg p-3 mt-1 mb-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600 font-medium">Total MSRP</span>
+                <span className="font-bold text-krf-forest">${(formulation.msrpPerBar * formulation.barCount).toFixed(2)}</span>
+              </div>
+              <p className="text-xs text-gray-400 mt-1">{formulation.barCount} bars x ${formulation.msrpPerBar.toFixed(2)}/bar</p>
+            </div>
             {macroWarning && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700 mt-3">
                 Macro grams ({macroGrams}g) exceed total weight ({formulation.totalGrams}g). Adjust sliders.

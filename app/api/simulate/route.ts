@@ -64,7 +64,9 @@ Fiber: ${formulation.fiberG}g
 Sugar: ${formulation.sugarG}g
 Total Weight: ${formulation.totalGrams}g
 COGS: $${formulation.cogsPerUnit.toFixed(2)}/unit
-Implied Retail Price: ~$${impliedRetail.toFixed(2)}
+MSRP per Bar: $${(formulation.msrpPerBar || impliedRetail).toFixed(2)}
+Bar Count: ${formulation.barCount || 12}
+Total MSRP: $${((formulation.msrpPerBar || impliedRetail) * (formulation.barCount || 12)).toFixed(2)}
 Caloric Density: ${caloriesPerGram} kcal/g
 Protein Ratio: ${proteinPct}% of weight
 
@@ -123,7 +125,7 @@ function computeSummary(formulation: Formulation, responses: PersonaResponse[]):
   const subscribers = responses.filter((r) => r.wouldSubscribe).length;
   const subscriptionRate = (subscribers / responses.length) * 100;
 
-  const suggestedRetail = formulation.cogsPerUnit * 2.8;
+  const suggestedRetail = formulation.msrpPerBar || formulation.cogsPerUnit * 2.8;
   const grossMargin = ((suggestedRetail - formulation.cogsPerUnit) / suggestedRetail) * 100;
 
   return {

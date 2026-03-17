@@ -8,6 +8,8 @@ export interface Formulation {
   sugarG: number;
   cogsPerUnit: number;
   totalGrams: number;
+  msrpPerBar: number;
+  barCount: number;
 }
 
 export interface PersonaResponse {
@@ -15,11 +17,11 @@ export interface PersonaResponse {
   name: string;
   channel: "amazon" | "d2c" | "walmart";
   archetype: string;
-  purchaseIntent: number;
-  repeatPurchase: number;
-  flavorAppeal: number;
-  nutritionFit: number;
-  priceAcceptance: number;
+  purchaseIntent: number; // 1-7
+  repeatPurchase: number; // 1-7
+  flavorAppeal: number; // 1-7
+  nutritionFit: number; // 1-7
+  priceAcceptance: number; // 1-7
   feedback: string;
   wouldSubscribe: boolean;
   suggestedImprovement: string;
