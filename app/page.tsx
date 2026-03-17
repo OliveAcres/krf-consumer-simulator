@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Formulation, SimulationResult, PersonaResponse } from "@/lib/types";
 import ChatPanel from "./components/ChatPanel";
+import ABTestPanel from "./components/ABTestPanel";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -67,6 +68,8 @@ function LoadingState({ batchProgress }: { batchProgress: number }) {
 
 function ResultsDashboard({ result }: { result: SimulationResult }) {
   const [activeTab, setActiveTab] = useState<"overview" | "channel" | "archetype" | "individual">("overview");
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => { setIsClient(true); }, []);
   const { summary, responses } = result;
 
   const channelData = [
@@ -147,6 +150,7 @@ function ResultsDashboard({ result }: { result: SimulationResult }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-xl p-6 shadow-sm border">
             <h3 className="text-sm font-semibold text-gray-700 mb-4">Channel Comparison (Radar)</h3>
+            {isClient && (
             <ResponsiveContainer width="100%" height={300}>
               <RadarChart data={radarData}>
                 <PolarGrid />
@@ -158,9 +162,12 @@ function ResultsDashboard({ result }: { result: SimulationResult }) {
                 <Legend />
               </RadarChart>
             </ResponsiveContainer>
+            )}
           </div>
+
           <div className="bg-white rounded-xl p-6 shadow-sm border">
             <h3 className="text-sm font-semibold text-gray-700 mb-4">Purchase Intent Distribution</h3>
+            {isClient && (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={intentDistribution}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -174,9 +181,12 @@ function ResultsDashboard({ result }: { result: SimulationResult }) {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
+            )}
           </div>
+
           <div className="bg-white rounded-xl p-6 shadow-sm border">
             <h3 className="text-sm font-semibold text-gray-700 mb-4">Subscription Propensity</h3>
+            {isClient && (
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie data={subscriptionPieData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} dataKey="value" label={({ name, value }) => `${name}: ${value}%`}>
@@ -187,7 +197,9 @@ function ResultsDashboard({ result }: { result: SimulationResult }) {
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
+            )}
           </div>
+
           <div className="bg-white rounded-xl p-6 shadow-sm border">
             <h3 className="text-sm font-semibold text-gray-700 mb-4">Channel Subscription Rates</h3>
             <div className="space-y-4 mt-2">
@@ -212,6 +224,7 @@ function ResultsDashboard({ result }: { result: SimulationResult }) {
         <div className="space-y-6">
           <div className="bg-white rounded-xl p-6 shadow-sm border">
             <h3 className="text-sm font-semibold text-gray-700 mb-4">Channel Performance Breakdown</h3>
+            {isClient && (
             <ResponsiveContainer width="100%" height={350}>
               <BarChart data={channelData} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" />
@@ -225,7 +238,9 @@ function ResultsDashboard({ result }: { result: SimulationResult }) {
                 <Bar dataKey="avgPriceAcceptance" name="Price Accept." fill="#FF9900" />
               </BarChart>
             </ResponsiveContainer>
+            )}
           </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {channelData.map((ch) => (
               <div key={ch.channel} className="bg-white rounded-xl p-5 shadow-sm border-l-4" style={{ borderColor: ch.fill }}>
@@ -249,6 +264,7 @@ function ResultsDashboard({ result }: { result: SimulationResult }) {
         <div className="space-y-6">
           <div className="bg-white rounded-xl p-6 shadow-sm border">
             <h3 className="text-sm font-semibold text-gray-700 mb-4">Purchase Intent by Persona Archetype</h3>
+            {isClient && (
             <ResponsiveContainer width="100%" height={500}>
               <BarChart data={archetypeData} layout="vertical" margin={{ left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -269,7 +285,9 @@ function ResultsDashboard({ result }: { result: SimulationResult }) {
                 <Bar dataKey="avgPurchaseIntent" name="Purchase Intent" fill="#00411E" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
+            )}
           </div>
+
           <div className="bg-white rounded-xl p-6 shadow-sm border">
             <h3 className="text-sm font-semibold text-gray-700 mb-4">Archetype Detail Table</h3>
             <div className="overflow-x-auto">
@@ -337,10 +355,11 @@ function IndividualResponses({ responses }: { responses: PersonaResponse[] }) {
         </select>
         <button onClick={() => setSortDir(sortDir === "desc" ? "asc" : "desc")}
           className="text-sm border rounded-md px-3 py-1.5 hover:bg-gray-50">
-          {sortDir === "desc" ? "\u2193 Desc" : "\u2191 Asc"}
+          {sortDir === "desc" ? "↓ Desc" : "↑ Asc"}
         </button>
         <span className="text-sm text-gray-400 ml-auto">{sorted.length} personas</span>
       </div>
+
       <div className="max-h-[600px] overflow-y-auto space-y-3">
         {sorted.map((r) => (
           <div key={r.personaId} className="border rounded-lg p-4 hover:shadow-sm transition-shadow">
@@ -360,7 +379,7 @@ function IndividualResponses({ responses }: { responses: PersonaResponse[] }) {
               <span>Flavor: {r.flavorAppeal}/7</span>
               <span>Nutrition: {r.nutritionFit}/7</span>
               <span>Price: {r.priceAcceptance}/7</span>
-              <span>{r.wouldSubscribe ? "\u2713 Would subscribe" : "\u00d7 One-time"}</span>
+              <span>{r.wouldSubscribe ? "✓ Would subscribe" : "× One-time"}</span>
             </div>
             <p className="text-sm text-gray-700">{r.feedback}</p>
             {r.suggestedImprovement && r.suggestedImprovement !== "N/A" && (
@@ -389,6 +408,7 @@ const DEFAULT_FORMULATION: Formulation = {
 };
 
 export default function Home() {
+  const [mode, setMode] = useState<"single" | "ab">("single");
   const [formulation, setFormulation] = useState<Formulation>(DEFAULT_FORMULATION);
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -405,6 +425,7 @@ export default function Home() {
     setBatchProgress(0);
     setResult(null);
 
+    // Simulate progress (actual batches are server-side)
     const progressInterval = setInterval(() => {
       setBatchProgress((prev) => Math.min(prev + 2, 90));
     }, 1000);
@@ -434,6 +455,7 @@ export default function Home() {
     }
   };
 
+  // Macro validation
   const macroGrams = formulation.proteinG + formulation.fatG + formulation.carbsG;
   const macroCalc = formulation.proteinG * 4 + formulation.fatG * 9 + formulation.carbsG * 4;
   const calorieDelta = Math.abs(formulation.calories - macroCalc);
@@ -442,6 +464,7 @@ export default function Home() {
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-8">
+      {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm" style={{ background: "#FFE200", color: "#00411E" }}>
@@ -452,16 +475,43 @@ export default function Home() {
             <p className="text-sm text-gray-500">R&D Formulation Testing / 100 AI Personas / Revenue-Weighted Channels</p>
           </div>
         </div>
-        <div className="flex gap-4 text-xs text-gray-400 mt-2">
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full" style={{ background: CHANNEL_COLORS.amazon }} /> Amazon (50%)</span>
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full" style={{ background: CHANNEL_COLORS.d2c }} /> D2C (30%)</span>
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full" style={{ background: CHANNEL_COLORS.walmart }} /> Walmart (20%)</span>
+        <div className="flex items-center justify-between mt-3">
+          <div className="flex gap-4 text-xs text-gray-400">
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full" style={{ background: CHANNEL_COLORS.amazon }} /> Amazon (50%)</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full" style={{ background: CHANNEL_COLORS.d2c }} /> D2C (30%)</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full" style={{ background: CHANNEL_COLORS.walmart }} /> Walmart (20%)</span>
+          </div>
+          <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setMode("single")}
+              className={`px-4 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                mode === "single" ? "bg-white text-krf-forest shadow-sm" : "text-gray-500"
+              }`}
+            >
+              Single Bar
+            </button>
+            <button
+              onClick={() => setMode("ab")}
+              className={`px-4 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                mode === "ab" ? "bg-white text-krf-forest shadow-sm" : "text-gray-500"
+              }`}
+            >
+              A/B Test
+            </button>
+          </div>
         </div>
       </div>
+
+      {mode === "ab" ? (
+        <ABTestPanel />
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Input Panel */}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-xl p-6 shadow-sm border sticky top-8">
             <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Formulation Input</h2>
+
+            {/* Description */}
             <div className="mb-5">
               <label className="text-sm font-medium text-gray-700 block mb-1">Description / Concept</label>
               <textarea
@@ -473,15 +523,27 @@ export default function Home() {
               />
               <p className="text-xs text-gray-400 mt-1">Be as specific or vague as you want. Claude adapts.</p>
             </div>
+
             <hr className="mb-4" />
-            <Slider label="Calories" value={formulation.calories} onChange={(v) => update("calories", v)} min={80} max={450} step={10} unit=" kcal" />
-            <Slider label="Protein" value={formulation.proteinG} onChange={(v) => update("proteinG", v)} min={0} max={35} step={1} unit="g" />
-            <Slider label="Fat" value={formulation.fatG} onChange={(v) => update("fatG", v)} min={0} max={25} step={1} unit="g" />
-            <Slider label="Carbs" value={formulation.carbsG} onChange={(v) => update("carbsG", v)} min={0} max={50} step={1} unit="g" />
-            <Slider label="Fiber" value={formulation.fiberG} onChange={(v) => update("fiberG", v)} min={0} max={15} step={1} unit="g" />
-            <Slider label="Sugar" value={formulation.sugarG} onChange={(v) => update("sugarG", v)} min={0} max={25} step={1} unit="g" help="Must be \u2264 Carbs" />
+
+            {/* Macros */}
+            <Slider label="Calories" value={formulation.calories} onChange={(v) => update("calories", v)}
+              min={80} max={450} step={10} unit=" kcal" />
+            <Slider label="Protein" value={formulation.proteinG} onChange={(v) => update("proteinG", v)}
+              min={0} max={35} step={1} unit="g" />
+            <Slider label="Fat" value={formulation.fatG} onChange={(v) => update("fatG", v)}
+              min={0} max={25} step={1} unit="g" />
+            <Slider label="Carbs" value={formulation.carbsG} onChange={(v) => update("carbsG", v)}
+              min={0} max={50} step={1} unit="g" />
+            <Slider label="Fiber" value={formulation.fiberG} onChange={(v) => update("fiberG", v)}
+              min={0} max={15} step={1} unit="g" />
+            <Slider label="Sugar" value={formulation.sugarG} onChange={(v) => update("sugarG", v)}
+              min={0} max={25} step={1} unit="g" />
+
             <hr className="my-4" />
-            <Slider label="Total Weight" value={formulation.totalGrams} onChange={(v) => update("totalGrams", v)} min={20} max={100} step={1} unit="g" />
+
+            <Slider label="Total Weight" value={formulation.totalGrams} onChange={(v) => update("totalGrams", v)}
+              min={20} max={100} step={1} unit="g" />
             <Slider label="COGS per Unit" value={formulation.cogsPerUnit} onChange={(v) => update("cogsPerUnit", v)}
               min={0.10} max={3.00} step={0.05} unit="" help={`Margin: ${formulation.msrpPerBar > 0 ? (((formulation.msrpPerBar - formulation.cogsPerUnit) / formulation.msrpPerBar) * 100).toFixed(1) : 0}%`} />
             <Slider label="MSRP per Bar" value={formulation.msrpPerBar} onChange={(v) => update("msrpPerBar", v)}
@@ -496,6 +558,8 @@ export default function Home() {
               </div>
               <p className="text-xs text-gray-400 mt-1">{formulation.barCount} bars x ${formulation.msrpPerBar.toFixed(2)}/bar</p>
             </div>
+
+            {/* Validation warnings */}
             {macroWarning && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700 mt-3">
                 Macro grams ({macroGrams}g) exceed total weight ({formulation.totalGrams}g). Adjust sliders.
@@ -506,6 +570,8 @@ export default function Home() {
                 Calorie slider ({formulation.calories}) differs from macro math ({macroCalc} kcal) by {calorieDelta} kcal. This may affect simulation accuracy.
               </div>
             )}
+
+            {/* Run button */}
             <button
               onClick={runSimulation}
               disabled={loading || macroWarning}
@@ -514,6 +580,7 @@ export default function Home() {
             >
               {loading ? "Running Simulation..." : "Run 100-Persona Simulation"}
             </button>
+
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700 mt-3">
                 {error}
@@ -521,12 +588,15 @@ export default function Home() {
             )}
           </div>
         </div>
+
+        {/* Results Panel */}
         <div className="lg:col-span-2">
           {loading && <LoadingState batchProgress={batchProgress} />}
+
           {!loading && !result && (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: "#FFE200" }}>
-                <span className="text-2xl">\ud83e\uddea</span>
+                <span className="text-2xl">🧪</span>
               </div>
               <h3 className="text-lg font-semibold text-gray-700 mb-2">Ready to Simulate</h3>
               <p className="text-sm text-gray-500 max-w-md">
@@ -549,10 +619,12 @@ export default function Home() {
               </div>
             </div>
           )}
+
           {!loading && result && <ResultsDashboard result={result} />}
           {!loading && result && <ChatPanel result={result} />}
         </div>
       </div>
+      )}
     </main>
   );
 }
