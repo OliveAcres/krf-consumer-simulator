@@ -17,16 +17,15 @@ export interface PersonaResponse {
   name: string;
   channel: "amazon" | "d2c" | "walmart";
   archetype: string;
-  purchaseIntent: number; // 1-7
-  repeatPurchase: number; // 1-7
-  flavorAppeal: number; // 1-7
-  nutritionFit: number; // 1-7
-  priceAcceptance: number; // 1-7
+  purchaseIntent: number; // 1-10
+  repeatPurchase: number; // 1-10
+  flavorAppeal: number; // 1-10
+  nutritionFit: number; // 1-10
+  priceAcceptance: number; // 1-10
   feedback: string;
   wouldSubscribe: boolean;
   suggestedImprovement: string;
 }
-
 export interface SimulationResult {
   formulation: Formulation;
   responses: PersonaResponse[];
@@ -54,7 +53,6 @@ export interface SimulationSummary {
     viable: boolean;
   };
 }
-
 export interface ChannelSummary {
   avgPurchaseIntent: number;
   avgRepeatPurchase: number;

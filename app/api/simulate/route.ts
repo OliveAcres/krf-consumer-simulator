@@ -24,19 +24,21 @@ MARKET CONTEXT:
 - 28% abandon their go-to brand for better-reviewed competitors
 
 EVALUATION FRAMEWORK:
-For each persona, evaluate the formulation on a 1-7 scale:
-7 = Perfect, must try, life-changing
-6 = Excellent, worth repeating
-5 = Good, enjoyable but not essential
-4 = Passable, works in a pinch
-3 = Bad, would not choose this
-2 = Atrocious, actively avoid
-1 = Evil, life-changing in a bad way
+For each persona, evaluate the formulation on a 1-10 scale:
+10 = Perfect, must try, life-changing, go out of your way
+9 = Outstanding, top-tier, would evangelize
+8 = Excellent, worth repeating regularly7 = Very good, would recommend to others
+6 = Good, enjoyable but not essential
+5 = Average, nothing special either way
+4 = Below average, would not choose again
+3 = Poor, would not choose this
+2 = Bad, actively avoid
+1 = Terrible, would warn others away
 
 Rate: purchaseIntent, repeatPurchase, flavorAppeal, nutritionFit, priceAcceptance
 Also determine: wouldSubscribe (boolean), feedback (1-2 sentences), suggestedImprovement (1 sentence)
 
-Be realistic and harsh where warranted. A performance athlete will not rate a 8g protein bar highly. A budget family shopper will not accept $4+ COGS (implying $6+ retail). A clean label purist will reject artificial anything. Match each persona's actual priorities and dealbreakers.
+Be realistic and harsh where warranted. Use the full 1-10 range. A performance athlete will not rate a 8g protein bar highly. A budget family shopper will not accept $4+ COGS (implying $6+ retail). A clean label purist will reject artificial anything. Match each persona's actual priorities and dealbreakers.
 
 IMPORTANT: You must respond with valid JSON only. No markdown, no code fences, no explanation text.`;
 
@@ -53,7 +55,6 @@ Context: ${p.description}`
   const impliedRetail = formulation.msrpPerBar || formulation.cogsPerUnit * 2.8;
   const caloriesPerGram = formulation.totalGrams > 0 ? (formulation.calories / formulation.totalGrams).toFixed(1) : "N/A";
   const proteinPct = formulation.totalGrams > 0 ? ((formulation.proteinG / formulation.totalGrams) * 100).toFixed(0) : "N/A";
-
   return `FORMULATION TO EVALUATE:
 Description: ${formulation.description || "No description provided"}
 Calories: ${formulation.calories} kcal
@@ -75,15 +76,14 @@ PERSONAS TO EVALUATE (respond for ALL ${batch.length}):
 ${personaDescriptions}
 
 Respond with a JSON array of objects, one per persona. Each object must have exactly these fields:
-{"personaId": number, "name": string, "channel": string, "archetype": string, "purchaseIntent": 1-7, "repeatPurchase": 1-7, "flavorAppeal": 1-7, "nutritionFit": 1-7, "priceAcceptance": 1-7, "feedback": string, "wouldSubscribe": boolean, "suggestedImprovement": string}`;
+{"personaId": number, "name": string, "channel": string, "archetype": string, "purchaseIntent": 1-10, "repeatPurchase": 1-10, "flavorAppeal": 1-10, "nutritionFit": 1-10, "priceAcceptance": 1-10, "feedback": string, "wouldSubscribe": boolean, "suggestedImprovement": string}`;
 }
 
 function computeSummary(formulation: Formulation, responses: PersonaResponse[]): SimulationSummary {
   const avg = (arr: number[]) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
 
   const channelSummary = (ch: "amazon" | "d2c" | "walmart"): ChannelSummary => {
-    const r = responses.filter((r) => r.channel === ch);
-    return {
+    const r = responses.filter((r) => r.channel === ch);    return {
       avgPurchaseIntent: Math.round(avg(r.map((x) => x.purchaseIntent)) * 10) / 10,
       avgRepeatPurchase: Math.round(avg(r.map((x) => x.repeatPurchase)) * 10) / 10,
       avgNutritionFit: Math.round(avg(r.map((x) => x.nutritionFit)) * 10) / 10,
@@ -116,12 +116,11 @@ function computeSummary(formulation: Formulation, responses: PersonaResponse[]):
   const strengths = allFeedback.filter((f) =>
     f.includes("great") || f.includes("love") || f.includes("perfect") || f.includes("excellent") || f.includes("good")
   ).slice(0, 5);
-
   const overallPI = avg(responses.map((r) => r.purchaseIntent));
   const overallRP = avg(responses.map((r) => r.repeatPurchase));
 
-  // Conversion rate estimation: purchase intent 4+ = potential buyer
-  const potentialBuyers = responses.filter((r) => r.purchaseIntent >= 4).length;
+  // Conversion rate estimation: purchase intent 6+ = potential buyer
+  const potentialBuyers = responses.filter((r) => r.purchaseIntent >= 6).length;
   const conversionRate = (potentialBuyers / responses.length) * 100;
 
   const subscribers = responses.filter((r) => r.wouldSubscribe).length;
@@ -151,10 +150,11 @@ function computeSummary(formulation: Formulation, responses: PersonaResponse[]):
     },
   };
 }
-
 export async function POST(request: NextRequest) {
   try {
-    const formulation: Formulation = await request.json();
+    const body = await request.json();
+    const formulation: Formulation = body;
+    const requestedCount = Math.min(100, Math.max(10, body.personaCount || 100));
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey || apiKey.startsWith("sk-ant-xxx")) {
@@ -165,13 +165,20 @@ export async function POST(request: NextRequest) {
     }
 
     const client = new Anthropic({ apiKey });
-    const personas = generatePersonas();
+    const allPersonas = generatePersonas();
+    // Proportionally sample: 50% Amazon, 30% D2C, 20% Walmart
+    const amazonCount = Math.round(requestedCount * 0.5);
+    const d2cCount = Math.round(requestedCount * 0.3);
+    const walmartCount = requestedCount - amazonCount - d2cCount;
+    const amazonPersonas = allPersonas.filter(p => p.channel === "amazon").slice(0, amazonCount);
+    const d2cPersonas = allPersonas.filter(p => p.channel === "d2c").slice(0, d2cCount);
+    const walmartPersonas = allPersonas.filter(p => p.channel === "walmart").slice(0, walmartCount);
+    const personas = [...amazonPersonas, ...d2cPersonas, ...walmartPersonas];
 
     // Process in batches of 20 to stay within token limits
     const batchSize = 20;
     const numBatches = Math.ceil(personas.length / batchSize);
     const allResponses: PersonaResponse[] = [];
-
     for (let i = 0; i < numBatches; i++) {
       const userPrompt = buildPersonaBatch(personas, formulation, i, batchSize);
 
@@ -202,8 +209,7 @@ export async function POST(request: NextRequest) {
             personaId: p.id,
             name: p.name,
             channel: p.channel,
-            archetype: p.archetype,
-            purchaseIntent: 4,
+            archetype: p.archetype,            purchaseIntent: 4,
             repeatPurchase: 3,
             flavorAppeal: 4,
             nutritionFit: 4,

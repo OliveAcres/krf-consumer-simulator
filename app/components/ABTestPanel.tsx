@@ -3,7 +3,6 @@
 import { useState, useCallback } from "react";
 import { Formulation, SimulationResult } from "@/lib/types";
 import ComparisonDashboard from "./ComparisonDashboard";
-import ChatPanel from "./ChatPanel";
 
 const DEFAULT_FORMULATION: Formulation = {
   description: "",
@@ -27,8 +26,7 @@ const VARIABLE_OPTIONS: { key: keyof Formulation; label: string; min: number; ma
   { key: "fiberG", label: "Fiber", min: 0, max: 20, step: 1, unit: "g" },
   { key: "sugarG", label: "Sugar", min: 0, max: 25, step: 1, unit: "g" },
   { key: "totalGrams", label: "Total Weight", min: 20, max: 100, step: 1, unit: "g" },
-  { key: "cogsPerUnit", label: "COGS per Unit", min: 0.10, max: 3.00, step: 0.05, unit: "" },
-  { key: "msrpPerBar", label: "MSRP per Bar", min: 0.50, max: 8.00, step: 0.01, unit: "" },
+  { key: "cogsPerUnit", label: "COGS per Unit", min: 0.10, max: 3.00, step: 0.05, unit: "" },  { key: "msrpPerBar", label: "MSRP per Bar", min: 0.50, max: 8.00, step: 0.01, unit: "" },
   { key: "barCount", label: "Bar Count", min: 1, max: 48, step: 1, unit: " bars" },
 ];
 
@@ -57,8 +55,7 @@ function FormulationColumn({ title, color, formulation, onUpdate }: {
       <h3 className="text-sm font-bold mb-3" style={{ color }}>{title}</h3>
       <textarea
         value={formulation.description}
-        onChange={(e) => onUpdate("description", e.target.value)}
-        placeholder="Description / concept..."
+        onChange={(e) => onUpdate("description", e.target.value)}        placeholder="Description / concept..."
         rows={2}
         className="w-full border rounded-lg p-2 text-xs resize-none mb-3 focus:outline-none focus:ring-1"
         style={{ "--tw-ring-color": color } as React.CSSProperties}
@@ -80,6 +77,7 @@ function FormulationColumn({ title, color, formulation, onUpdate }: {
 
 export default function ABTestPanel() {
   const [subMode, setSubMode] = useState<"two-bars" | "one-variable">("two-bars");
+  const [personaCount, setPersonaCount] = useState(100);
   const [formA, setFormA] = useState<Formulation>({ ...DEFAULT_FORMULATION });
   const [formB, setFormB] = useState<Formulation>({ ...DEFAULT_FORMULATION });
   const [selectedVar, setSelectedVar] = useState<keyof Formulation>("proteinG");
@@ -87,8 +85,7 @@ export default function ABTestPanel() {
   const [varValueB, setVarValueB] = useState<number>(20);
   const [baseForm, setBaseForm] = useState<Formulation>({ ...DEFAULT_FORMULATION });
   const [resultA, setResultA] = useState<SimulationResult | null>(null);
-  const [resultB, setResultB] = useState<SimulationResult | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [resultB, setResultB] = useState<SimulationResult | null>(null);  const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
@@ -117,7 +114,6 @@ export default function ABTestPanel() {
 
     let fA: Formulation;
     let fB: Formulation;
-
     if (subMode === "one-variable") {
       fA = { ...baseForm, [selectedVar]: varValueA };
       fB = { ...baseForm, [selectedVar]: varValueB };
@@ -136,19 +132,18 @@ export default function ABTestPanel() {
         fetch("/api/simulate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(fA),
+          body: JSON.stringify({ ...fA, personaCount }),
         }),
         fetch("/api/simulate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(fB),
+          body: JSON.stringify({ ...fB, personaCount }),
         }),
       ]);
 
       clearInterval(progressInterval);
 
-      if (!resA.ok) {
-        const d = await resA.json();
+      if (!resA.ok) {        const d = await resA.json();
         throw new Error(`Bar A failed: ${d.error || resA.status}`);
       }
       if (!resB.ok) {
@@ -179,7 +174,6 @@ export default function ABTestPanel() {
   const labelB = subMode === "one-variable"
     ? `${selectedVarOption.label}: ${varValueB}${selectedVarOption.unit}`
     : "Bar B";
-
   return (
     <div>
       {/* Sub-mode selector */}
@@ -209,8 +203,7 @@ export default function ABTestPanel() {
             <button onClick={copyAToB} className="text-xs px-3 py-1.5 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-600">
               Copy A to B
             </button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          </div>          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <FormulationColumn title="Bar A" color="#00411E" formulation={formA} onUpdate={updateA} />
             <FormulationColumn title="Bar B" color="#B45309" formulation={formB} onUpdate={updateB} />
           </div>
@@ -239,8 +232,7 @@ export default function ABTestPanel() {
             value={selectedVar}
             onChange={(e) => {
               const key = e.target.value as keyof Formulation;
-              setSelectedVar(key);
-              const opt = VARIABLE_OPTIONS.find((v) => v.key === key)!;
+              setSelectedVar(key);              const opt = VARIABLE_OPTIONS.find((v) => v.key === key)!;
               setVarValueA(opt.min + (opt.max - opt.min) * 0.3);
               setVarValueB(opt.min + (opt.max - opt.min) * 0.7);
             }}
@@ -269,12 +261,22 @@ export default function ABTestPanel() {
                 <span className="text-sm font-mono font-bold" style={{ color: "#B45309" }}>{varValueB}{selectedVarOption.unit}</span>
               </div>
               <input type="range" min={selectedVarOption.min} max={selectedVarOption.max}
-                step={selectedVarOption.step} value={varValueB}
-                onChange={(e) => setVarValueB(parseFloat(e.target.value))} className="w-full" />
+                step={selectedVarOption.step} value={varValueB}                onChange={(e) => setVarValueB(parseFloat(e.target.value))} className="w-full" />
             </div>
           </div>
         </div>
       )}
+
+      {/* Persona count slider */}
+      <div className="mb-4 bg-white rounded-xl p-4 shadow-sm border">
+        <div className="flex justify-between items-baseline mb-1">
+          <label className="text-sm font-medium text-gray-700">Personas per Bar</label>
+          <span className="text-sm font-mono font-bold text-krf-forest">{personaCount}</span>
+        </div>
+        <input type="range" min={10} max={100} step={10} value={personaCount}
+          onChange={(e) => setPersonaCount(parseInt(e.target.value))} className="w-full" />
+        <p className="text-xs text-gray-400 mt-1">{personaCount * 2} total simulations ({personaCount} per bar)</p>
+      </div>
 
       {/* Run button */}
       <button
@@ -283,16 +285,15 @@ export default function ABTestPanel() {
         className="w-full py-3 px-4 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-6"
         style={{ background: loading ? "#ccc" : "#00411E", color: loading ? "#666" : "#FFE200" }}
       >
-        {loading ? "Running A/B Comparison (200 personas)..." : "Run A/B Comparison"}
+        {loading ? `Running A/B Comparison (${personaCount * 2} personas)...` : `Run A/B Comparison (${personaCount} per bar)`}
       </button>
 
       {/* Progress */}
       {loading && (
-        <div className="flex flex-col items-center justify-center py-12">
-          <div className="flex gap-2 mb-4">
+        <div className="flex flex-col items-center justify-center py-12">          <div className="flex gap-2 mb-4">
             <span className="loading-dot" /><span className="loading-dot" /><span className="loading-dot" />
           </div>
-          <p className="text-lg font-medium text-krf-forest mb-2">Running 200 Consumer Simulations</p>
+          <p className="text-lg font-medium text-krf-forest mb-2">Running {personaCount * 2} Consumer Simulations</p>
           <p className="text-sm text-gray-500 mb-4">Bar A and Bar B evaluated in parallel across all personas...</p>
           <div className="w-64 bg-gray-200 rounded-full h-2">
             <div className="h-2 rounded-full transition-all duration-500" style={{ width: `${progress}%`, background: "var(--krf-forest)" }} />
@@ -307,10 +308,7 @@ export default function ABTestPanel() {
 
       {/* Results */}
       {!loading && resultA && resultB && (
-        <>
-          <ComparisonDashboard resultA={resultA} resultB={resultB} labelA={labelA} labelB={labelB} />
-          <ChatPanel result={resultA} />
-        </>
+        <ComparisonDashboard resultA={resultA} resultB={resultB} labelA={labelA} labelB={labelB} />
       )}
     </div>
   );

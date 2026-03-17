@@ -11,12 +11,12 @@ import {
 } from "recharts";
 
 const CHANNEL_COLORS = { amazon: "#FF9900", d2c: "#00411E", walmart: "#0071CE" };
-const SCORE_COLORS = ["#dc2626", "#dc2626", "#f87171", "#fbbf24", "#fde68a", "#86efac", "#22c55e", "#15803d"];
+const SCORE_COLORS = ["#dc2626", "#dc2626", "#ef4444", "#f87171", "#fbbf24", "#fde68a", "#86efac", "#4ade80", "#22c55e", "#16a34a", "#15803d"];
 
 function ScoreBadge({ score }: { score: number }) {
   const rounded = Math.round(score);
   return (
-    <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold score-${Math.min(7, Math.max(1, rounded))}`}>
+    <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold score-${Math.min(10, Math.max(1, rounded))}`}>
       {typeof score === "number" ? score.toFixed(1) : score}
     </span>
   );
@@ -28,8 +28,7 @@ function Slider({ label, value, onChange, min, max, step, unit, help }: {
 }) {
   return (
     <div className="mb-4">
-      <div className="flex justify-between items-baseline mb-1">
-        <label className="text-sm font-medium text-gray-700">{label}</label>
+      <div className="flex justify-between items-baseline mb-1">        <label className="text-sm font-medium text-gray-700">{label}</label>
         <span className="text-sm font-mono font-bold text-krf-forest">{value}{unit}</span>
       </div>
       {help && <p className="text-xs text-gray-400 mb-1">{help}</p>}
@@ -53,14 +52,13 @@ function LoadingState({ batchProgress }: { batchProgress: number }) {
           <span className="loading-dot" /><span className="loading-dot" /><span className="loading-dot" />
         </div>
       </div>
-      <p className="text-lg font-medium text-krf-forest mb-2">Simulating 100 Consumer Responses</p>
+      <p className="text-lg font-medium text-krf-forest mb-2">Simulating Consumer Responses</p>
       <p className="text-sm text-gray-500 mb-4">Claude is evaluating your formulation across all personas...</p>
       <div className="w-64 bg-gray-200 rounded-full h-2">
         <div
           className="h-2 rounded-full transition-all duration-500"
           style={{ width: `${batchProgress}%`, background: "var(--krf-forest)" }}
-        />
-      </div>
+        />      </div>
       <p className="text-xs text-gray-400 mt-2">{batchProgress}% complete</p>
     </div>
   );
@@ -90,11 +88,10 @@ function ResultsDashboard({ result }: { result: SimulationResult }) {
     .map(([name, data]) => ({ name: name.length > 20 ? name.substring(0, 18) + "..." : name, fullName: name, ...data }));
 
   const subscriptionPieData = [
-    { name: "Would Subscribe", value: summary.projectedSubscriptionRate, color: "#00411E" },
-    { name: "One-time Only", value: 100 - summary.projectedSubscriptionRate, color: "#ddd" },
+    { name: "Would Subscribe", value: summary.projectedSubscriptionRate, color: "#00411E" },    { name: "One-time Only", value: 100 - summary.projectedSubscriptionRate, color: "#ddd" },
   ];
 
-  const intentDistribution = [1, 2, 3, 4, 5, 6, 7].map((score) => ({
+  const intentDistribution = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => ({
     score: score.toString(),
     count: responses.filter((r) => Math.round(r.purchaseIntent) === score).length,
     fill: SCORE_COLORS[score],
@@ -108,21 +105,20 @@ function ResultsDashboard({ result }: { result: SimulationResult }) {
           <p className="text-xs text-gray-500 uppercase tracking-wide">Purchase Intent</p>
           <div className="flex items-center gap-2 mt-1">
             <ScoreBadge score={summary.overallPurchaseIntent} />
-            <span className="text-2xl font-bold text-gray-900">{summary.overallPurchaseIntent}/7</span>
+            <span className="text-2xl font-bold text-gray-900">{summary.overallPurchaseIntent}/10</span>
           </div>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border">
           <p className="text-xs text-gray-500 uppercase tracking-wide">Conversion Rate</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">{summary.projectedConversionRate}%</p>
-          <p className="text-xs text-gray-400">Personas scoring 4+</p>
+          <p className="text-xs text-gray-400">Personas scoring 6+</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border">
           <p className="text-xs text-gray-500 uppercase tracking-wide">Subscription Rate</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">{summary.projectedSubscriptionRate}%</p>
           <p className="text-xs text-gray-400">Would auto-replenish</p>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border">
-          <p className="text-xs text-gray-500 uppercase tracking-wide">Margin Analysis</p>
+        <div className="bg-white rounded-xl p-4 shadow-sm border">          <p className="text-xs text-gray-500 uppercase tracking-wide">Margin Analysis</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">{summary.marginAnalysis.grossMargin}%</p>
           <p className={`text-xs ${summary.marginAnalysis.viable ? "text-green-600" : "text-red-600"}`}>
             {summary.marginAnalysis.viable ? "Viable" : "Below 50% threshold"} @ ${summary.marginAnalysis.suggestedRetail} retail
@@ -151,11 +147,10 @@ function ResultsDashboard({ result }: { result: SimulationResult }) {
           <div className="bg-white rounded-xl p-6 shadow-sm border">
             <h3 className="text-sm font-semibold text-gray-700 mb-4">Channel Comparison (Radar)</h3>
             {isClient && (
-            <ResponsiveContainer width="100%" height={300}>
-              <RadarChart data={radarData}>
+            <ResponsiveContainer width="100%" height={300}>              <RadarChart data={radarData}>
                 <PolarGrid />
                 <PolarAngleAxis dataKey="metric" className="text-xs" />
-                <PolarRadiusAxis domain={[0, 7]} />
+                <PolarRadiusAxis domain={[0, 10]} />
                 <Radar name="Amazon" dataKey="amazon" stroke={CHANNEL_COLORS.amazon} fill={CHANNEL_COLORS.amazon} fillOpacity={0.15} />
                 <Radar name="D2C" dataKey="d2c" stroke={CHANNEL_COLORS.d2c} fill={CHANNEL_COLORS.d2c} fillOpacity={0.15} />
                 <Radar name="Walmart" dataKey="walmart" stroke={CHANNEL_COLORS.walmart} fill={CHANNEL_COLORS.walmart} fillOpacity={0.15} />
@@ -183,7 +178,6 @@ function ResultsDashboard({ result }: { result: SimulationResult }) {
             </ResponsiveContainer>
             )}
           </div>
-
           <div className="bg-white rounded-xl p-6 shadow-sm border">
             <h3 className="text-sm font-semibold text-gray-700 mb-4">Subscription Propensity</h3>
             {isClient && (
@@ -214,8 +208,7 @@ function ResultsDashboard({ result }: { result: SimulationResult }) {
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
+            </div>          </div>
         </div>
       )}
 
@@ -228,7 +221,7 @@ function ResultsDashboard({ result }: { result: SimulationResult }) {
             <ResponsiveContainer width="100%" height={350}>
               <BarChart data={channelData} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" domain={[0, 7]} />
+                <XAxis type="number" domain={[0, 10]} />
                 <YAxis dataKey="channel" type="category" width={80} />
                 <Tooltip />
                 <Legend />
@@ -245,8 +238,7 @@ function ResultsDashboard({ result }: { result: SimulationResult }) {
             {channelData.map((ch) => (
               <div key={ch.channel} className="bg-white rounded-xl p-5 shadow-sm border-l-4" style={{ borderColor: ch.fill }}>
                 <h4 className="font-semibold text-lg mb-3" style={{ color: ch.fill }}>{ch.channel}</h4>
-                <p className="text-xs text-gray-500 mb-3">{ch.count} personas (revenue-weighted)</p>
-                <div className="space-y-2 text-sm">
+                <p className="text-xs text-gray-500 mb-3">{ch.count} personas (revenue-weighted)</p>                <div className="space-y-2 text-sm">
                   <div className="flex justify-between"><span>Purchase Intent</span><ScoreBadge score={ch.avgPurchaseIntent} /></div>
                   <div className="flex justify-between"><span>Repeat Purchase</span><ScoreBadge score={ch.avgRepeatPurchase} /></div>
                   <div className="flex justify-between"><span>Nutrition Fit</span><ScoreBadge score={ch.avgNutritionFit} /></div>
@@ -268,7 +260,7 @@ function ResultsDashboard({ result }: { result: SimulationResult }) {
             <ResponsiveContainer width="100%" height={500}>
               <BarChart data={archetypeData} layout="vertical" margin={{ left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" domain={[0, 7]} />
+                <XAxis type="number" domain={[0, 10]} />
                 <YAxis dataKey="name" type="category" width={160} className="text-xs" />
                 <Tooltip content={({ payload }) => {
                   if (!payload?.length) return null;
@@ -276,8 +268,7 @@ function ResultsDashboard({ result }: { result: SimulationResult }) {
                   return (
                     <div className="bg-white p-3 rounded-lg shadow-lg border text-sm">
                       <p className="font-bold">{d.fullName} ({d.count})</p>
-                      <p>Purchase: {d.avgPurchaseIntent}/7</p>
-                      <p>Repeat: {d.avgRepeatPurchase}/7</p>
+                      <p>Purchase: {d.avgPurchaseIntent}/10</p>                      <p>Repeat: {d.avgRepeatPurchase}/10</p>
                       <p className="text-xs text-gray-500 mt-1 max-w-xs">{d.keyFeedback}</p>
                     </div>
                   );
@@ -306,8 +297,7 @@ function ResultsDashboard({ result }: { result: SimulationResult }) {
                     <tr key={row.fullName} className="border-b hover:bg-gray-50">
                       <td className="p-3 font-medium">{row.fullName}</td>
                       <td className="p-3 text-center">{row.count}</td>
-                      <td className="p-3 text-center"><ScoreBadge score={row.avgPurchaseIntent} /></td>
-                      <td className="p-3 text-center"><ScoreBadge score={row.avgRepeatPurchase} /></td>
+                      <td className="p-3 text-center"><ScoreBadge score={row.avgPurchaseIntent} /></td>                      <td className="p-3 text-center"><ScoreBadge score={row.avgRepeatPurchase} /></td>
                       <td className="p-3 text-xs text-gray-600 max-w-md">{row.keyFeedback}</td>
                     </tr>
                   ))}
@@ -336,16 +326,15 @@ function IndividualResponses({ responses }: { responses: PersonaResponse[] }) {
     if (sortBy === "archetype") return mult * a.archetype.localeCompare(b.archetype);
     return mult * (a.purchaseIntent - b.purchaseIntent);
   });
-
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm border">
       <div className="flex flex-wrap gap-3 mb-4">
         <select value={channelFilter} onChange={(e) => setChannelFilter(e.target.value)}
           className="text-sm border rounded-md px-3 py-1.5">
-          <option value="all">All Channels</option>
-          <option value="amazon">Amazon (50)</option>
-          <option value="d2c">D2C (30)</option>
-          <option value="walmart">Walmart (20)</option>
+          <option value="all">All Channels ({responses.length})</option>
+          <option value="amazon">Amazon ({responses.filter(r => r.channel === "amazon").length})</option>
+          <option value="d2c">D2C ({responses.filter(r => r.channel === "d2c").length})</option>
+          <option value="walmart">Walmart ({responses.filter(r => r.channel === "walmart").length})</option>
         </select>
         <select value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
           className="text-sm border rounded-md px-3 py-1.5">
@@ -365,8 +354,7 @@ function IndividualResponses({ responses }: { responses: PersonaResponse[] }) {
           <div key={r.personaId} className="border rounded-lg p-4 hover:shadow-sm transition-shadow">
             <div className="flex items-start justify-between mb-2">
               <div>
-                <span className="font-medium text-sm">{r.name}</span>
-                <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{
+                <span className="font-medium text-sm">{r.name}</span>                <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{
                   background: r.channel === "amazon" ? "#FFF3CD" : r.channel === "d2c" ? "#D1FAE5" : "#DBEAFE",
                   color: r.channel === "amazon" ? "#856404" : r.channel === "d2c" ? "#065F46" : "#1E40AF",
                 }}>{r.channel.toUpperCase()}</span>
@@ -375,10 +363,10 @@ function IndividualResponses({ responses }: { responses: PersonaResponse[] }) {
               <ScoreBadge score={r.purchaseIntent} />
             </div>
             <div className="flex gap-4 text-xs text-gray-500 mb-2">
-              <span>Repeat: {r.repeatPurchase}/7</span>
-              <span>Flavor: {r.flavorAppeal}/7</span>
-              <span>Nutrition: {r.nutritionFit}/7</span>
-              <span>Price: {r.priceAcceptance}/7</span>
+              <span>Repeat: {r.repeatPurchase}/10</span>
+              <span>Flavor: {r.flavorAppeal}/10</span>
+              <span>Nutrition: {r.nutritionFit}/10</span>
+              <span>Price: {r.priceAcceptance}/10</span>
               <span>{r.wouldSubscribe ? "✓ Would subscribe" : "× One-time"}</span>
             </div>
             <p className="text-sm text-gray-700">{r.feedback}</p>
@@ -396,8 +384,7 @@ function IndividualResponses({ responses }: { responses: PersonaResponse[] }) {
 const DEFAULT_FORMULATION: Formulation = {
   description: "",
   calories: 230,
-  proteinG: 10,
-  fatG: 9,
+  proteinG: 10,  fatG: 9,
   carbsG: 30,
   fiberG: 3,
   sugarG: 14,
@@ -410,6 +397,7 @@ const DEFAULT_FORMULATION: Formulation = {
 export default function Home() {
   const [mode, setMode] = useState<"single" | "ab">("single");
   const [formulation, setFormulation] = useState<Formulation>(DEFAULT_FORMULATION);
+  const [personaCount, setPersonaCount] = useState(100);
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [batchProgress, setBatchProgress] = useState(0);
@@ -426,15 +414,14 @@ export default function Home() {
     setResult(null);
 
     // Simulate progress (actual batches are server-side)
-    const progressInterval = setInterval(() => {
-      setBatchProgress((prev) => Math.min(prev + 2, 90));
+    const progressInterval = setInterval(() => {      setBatchProgress((prev) => Math.min(prev + 2, 90));
     }, 1000);
 
     try {
       const res = await fetch("/api/simulate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formulation),
+        body: JSON.stringify({ ...formulation, personaCount }),
       });
 
       clearInterval(progressInterval);
@@ -457,8 +444,7 @@ export default function Home() {
 
   // Macro validation
   const macroGrams = formulation.proteinG + formulation.fatG + formulation.carbsG;
-  const macroCalc = formulation.proteinG * 4 + formulation.fatG * 9 + formulation.carbsG * 4;
-  const calorieDelta = Math.abs(formulation.calories - macroCalc);
+  const macroCalc = formulation.proteinG * 4 + formulation.fatG * 9 + formulation.carbsG * 4;  const calorieDelta = Math.abs(formulation.calories - macroCalc);
   const macroWarning = macroGrams > formulation.totalGrams;
   const calorieWarning = calorieDelta > 30;
 
@@ -472,7 +458,7 @@ export default function Home() {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Consumer Simulator</h1>
-            <p className="text-sm text-gray-500">R&D Formulation Testing / 100 AI Personas / Revenue-Weighted Channels</p>
+            <p className="text-sm text-gray-500">R&D Formulation Testing / AI Personas / Revenue-Weighted Channels</p>
           </div>
         </div>
         <div className="flex items-center justify-between mt-3">
@@ -488,8 +474,7 @@ export default function Home() {
                 mode === "single" ? "bg-white text-krf-forest shadow-sm" : "text-gray-500"
               }`}
             >
-              Single Bar
-            </button>
+              Single Bar            </button>
             <button
               onClick={() => setMode("ab")}
               className={`px-4 py-1.5 rounded-md text-xs font-medium transition-colors ${
@@ -500,6 +485,11 @@ export default function Home() {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Chat Panel - Always visible at top */}
+      <div className="mb-8">
+        <ChatPanel result={result} />
       </div>
 
       {mode === "ab" ? (
@@ -513,8 +503,7 @@ export default function Home() {
 
             {/* Description */}
             <div className="mb-5">
-              <label className="text-sm font-medium text-gray-700 block mb-1">Description / Concept</label>
-              <textarea
+              <label className="text-sm font-medium text-gray-700 block mb-1">Description / Concept</label>              <textarea
                 value={formulation.description}
                 onChange={(e) => update("description", e.target.value)}
                 placeholder="e.g., 'Organic dark chocolate peanut butter protein bar with oat base and honey' or 'high-protein keto bar under 200 calories'"
@@ -543,8 +532,7 @@ export default function Home() {
             <hr className="my-4" />
 
             <Slider label="Total Weight" value={formulation.totalGrams} onChange={(v) => update("totalGrams", v)}
-              min={20} max={100} step={1} unit="g" />
-            <Slider label="COGS per Unit" value={formulation.cogsPerUnit} onChange={(v) => update("cogsPerUnit", v)}
+              min={20} max={100} step={1} unit="g" />            <Slider label="COGS per Unit" value={formulation.cogsPerUnit} onChange={(v) => update("cogsPerUnit", v)}
               min={0.10} max={3.00} step={0.05} unit="" help={`Margin: ${formulation.msrpPerBar > 0 ? (((formulation.msrpPerBar - formulation.cogsPerUnit) / formulation.msrpPerBar) * 100).toFixed(1) : 0}%`} />
             <Slider label="MSRP per Bar" value={formulation.msrpPerBar} onChange={(v) => update("msrpPerBar", v)}
               min={0.50} max={8.00} step={0.01} unit="" help={`${(formulation.msrpPerBar / formulation.cogsPerUnit).toFixed(1)}x markup on COGS`} />
@@ -571,6 +559,9 @@ export default function Home() {
               </div>
             )}
 
+            <hr className="my-4" />
+            <Slider label="Persona Count" value={personaCount} onChange={(v) => setPersonaCount(v)}
+              min={10} max={100} step={10} unit="" help={`${Math.round(personaCount * 0.5)} Amazon / ${Math.round(personaCount * 0.3)} D2C / ${personaCount - Math.round(personaCount * 0.5) - Math.round(personaCount * 0.3)} Walmart`} />
             {/* Run button */}
             <button
               onClick={runSimulation}
@@ -578,7 +569,7 @@ export default function Home() {
               className="w-full mt-6 py-3 px-4 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ background: loading ? "#ccc" : "#00411E", color: loading ? "#666" : "#FFE200" }}
             >
-              {loading ? "Running Simulation..." : "Run 100-Persona Simulation"}
+              {loading ? "Running Simulation..." : `Run ${personaCount}-Persona Simulation`}
             </button>
 
             {error && (
@@ -600,8 +591,7 @@ export default function Home() {
               </div>
               <h3 className="text-lg font-semibold text-gray-700 mb-2">Ready to Simulate</h3>
               <p className="text-sm text-gray-500 max-w-md">
-                Configure your formulation on the left, then hit the button. Claude will evaluate it from the perspective
-                of 100 consumer personas weighted across Amazon (50), D2C (30), and Walmart (20) channels.
+                Configure your formulation on the left, then hit the button. Claude will evaluate it from the perspective                of up to 100 consumer personas weighted across Amazon (50%), D2C (30%), and Walmart (20%) channels.
               </p>
               <div className="mt-6 grid grid-cols-3 gap-4 text-xs text-gray-400">
                 <div className="p-3 bg-white rounded-lg border">
@@ -621,7 +611,6 @@ export default function Home() {
           )}
 
           {!loading && result && <ResultsDashboard result={result} />}
-          {!loading && result && <ChatPanel result={result} />}
         </div>
       </div>
       )}

@@ -20,14 +20,13 @@ function Delta({ a, b, suffix = "", invert = false }: { a: number; b: number; su
   );
 }
 
-function MetricCard({ label, valueA, valueB, suffix = "/7" }: { label: string; valueA: number; valueB: number; suffix?: string }) {
+function MetricCard({ label, valueA, valueB, suffix = "/10" }: { label: string; valueA: number; valueB: number; suffix?: string }) {
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm border">
       <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">{label}</p>
       <div className="flex items-center gap-3">
         <div className="flex-1">
-          <p className="text-xs font-medium" style={{ color: BAR_COLORS.a }}>Bar A</p>
-          <p className="text-xl font-bold text-gray-900">{valueA}{suffix}</p>
+          <p className="text-xs font-medium" style={{ color: BAR_COLORS.a }}>Bar A</p>          <p className="text-xl font-bold text-gray-900">{valueA}{suffix}</p>
         </div>
         <div className="flex flex-col items-center">
           <Delta a={valueA} b={valueB} />
@@ -56,10 +55,9 @@ export default function ComparisonDashboard({ resultA, resultB, labelA, labelB }
   // Radar data: A vs B across all dimensions
   const radarData = [
     { metric: "Purchase Intent", barA: sA.overallPurchaseIntent, barB: sB.overallPurchaseIntent },
-    { metric: "Repeat Purchase", barA: sA.overallRepeatPurchase, barB: sB.overallRepeatPurchase },
-    { metric: "Conversion %", barA: sA.projectedConversionRate / 100 * 7, barB: sB.projectedConversionRate / 100 * 7 },
-    { metric: "Subscription %", barA: sA.projectedSubscriptionRate / 100 * 7, barB: sB.projectedSubscriptionRate / 100 * 7 },
-    { metric: "Margin %", barA: sA.marginAnalysis.grossMargin / 100 * 7, barB: sB.marginAnalysis.grossMargin / 100 * 7 },
+    { metric: "Repeat Purchase", barA: sA.overallRepeatPurchase, barB: sB.overallRepeatPurchase },    { metric: "Conversion %", barA: sA.projectedConversionRate / 100 * 10, barB: sB.projectedConversionRate / 100 * 10 },
+    { metric: "Subscription %", barA: sA.projectedSubscriptionRate / 100 * 10, barB: sB.projectedSubscriptionRate / 100 * 10 },
+    { metric: "Margin %", barA: sA.marginAnalysis.grossMargin / 100 * 10, barB: sB.marginAnalysis.grossMargin / 100 * 10 },
   ];
 
   // Channel comparison
@@ -86,8 +84,7 @@ export default function ComparisonDashboard({ resultA, resultB, labelA, labelB }
       archetype: arch,
       piA: a?.avgPurchaseIntent ?? 0,
       piB: b?.avgPurchaseIntent ?? 0,
-      rpA: a?.avgRepeatPurchase ?? 0,
-      rpB: b?.avgRepeatPurchase ?? 0,
+      rpA: a?.avgRepeatPurchase ?? 0,      rpB: b?.avgRepeatPurchase ?? 0,
       countA: a?.count ?? 0,
       countB: b?.count ?? 0,
       winner: (a?.avgPurchaseIntent ?? 0) > (b?.avgPurchaseIntent ?? 0) ? "A" :
@@ -105,7 +102,8 @@ export default function ComparisonDashboard({ resultA, resultB, labelA, labelB }
     const rA = resultA.responses.find((ra) => ra.personaId === rB.personaId);
     return rA && rB.purchaseIntent > rA.purchaseIntent;
   }).length;
-  const ties = 100 - winsA - winsB;
+  const totalPersonas = resultA.responses.length;
+  const ties = totalPersonas - winsA - winsB;
 
   return (
     <div>
@@ -114,8 +112,7 @@ export default function ComparisonDashboard({ resultA, resultB, labelA, labelB }
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-bold text-gray-900">A/B Comparison Results</h2>
           <div className="flex gap-4 text-sm">
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full" style={{ background: BAR_COLORS.a }} />
+            <span className="flex items-center gap-1.5">              <span className="w-3 h-3 rounded-full" style={{ background: BAR_COLORS.a }} />
               <span className="font-medium">{labelA}</span>
             </span>
             <span className="flex items-center gap-1.5">
@@ -134,7 +131,7 @@ export default function ComparisonDashboard({ resultA, resultB, labelA, labelB }
           </div>
           <span className="text-sm font-semibold" style={{ color: BAR_COLORS.b }}>{winsB} wins</span>
         </div>
-        <p className="text-xs text-gray-400 mt-1 text-center">{ties} ties out of 100 personas</p>
+        <p className="text-xs text-gray-400 mt-1 text-center">{ties} ties out of {totalPersonas} personas</p>
       </div>
 
       {/* Top-line metrics */}
@@ -144,7 +141,6 @@ export default function ComparisonDashboard({ resultA, resultB, labelA, labelB }
         <MetricCard label="Subscription Rate" valueA={sA.projectedSubscriptionRate} valueB={sB.projectedSubscriptionRate} suffix="%" />
         <MetricCard label="Gross Margin" valueA={sA.marginAnalysis.grossMargin} valueB={sB.marginAnalysis.grossMargin} suffix="%" />
       </div>
-
       {/* Tabs */}
       <div className="flex gap-1 mb-6 bg-gray-100 rounded-lg p-1">
         {(["overview", "channel", "archetype", "winners"] as const).map((tab) => (
@@ -170,10 +166,9 @@ export default function ComparisonDashboard({ resultA, resultB, labelA, labelB }
               <RadarChart data={radarData}>
                 <PolarGrid />
                 <PolarAngleAxis dataKey="metric" className="text-xs" />
-                <PolarRadiusAxis domain={[0, 7]} />
+                <PolarRadiusAxis domain={[0, 10]} />
                 <Radar name={labelA} dataKey="barA" stroke={BAR_COLORS.a} fill={BAR_COLORS.a} fillOpacity={0.2} />
-                <Radar name={labelB} dataKey="barB" stroke={BAR_COLORS.b} fill={BAR_COLORS.b} fillOpacity={0.2} />
-                <Legend />
+                <Radar name={labelB} dataKey="barB" stroke={BAR_COLORS.b} fill={BAR_COLORS.b} fillOpacity={0.2} />                <Legend />
               </RadarChart>
             </ResponsiveContainer>
             )}
@@ -203,8 +198,7 @@ export default function ComparisonDashboard({ resultA, resultB, labelA, labelB }
                     <span className={`flex-1 text-right ${isText ? "text-xs" : ""}`}>{valB}</span>
                   </div>
                 );
-              })}
-            </div>
+              })}            </div>
           </div>
         </div>
       )}
@@ -219,7 +213,7 @@ export default function ComparisonDashboard({ resultA, resultB, labelA, labelB }
               <BarChart data={channelCompare}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="channel" />
-                <YAxis domain={[0, 7]} />
+                <YAxis domain={[0, 10]} />
                 <Tooltip />
                 <Legend />
                 <Bar dataKey="Bar A: Purchase" fill={BAR_COLORS.a} />
@@ -233,8 +227,7 @@ export default function ComparisonDashboard({ resultA, resultB, labelA, labelB }
             {channels.map((ch) => {
               const a = sA.byChannel[ch];
               const b = sB.byChannel[ch];
-              const aWins = a.avgPurchaseIntent > b.avgPurchaseIntent;
-              return (
+              const aWins = a.avgPurchaseIntent > b.avgPurchaseIntent;              return (
                 <div key={ch} className="bg-white rounded-xl p-5 shadow-sm border">
                   <h4 className="font-semibold text-sm mb-3">{channelLabels[ch]}</h4>
                   <div className="space-y-2 text-xs">
@@ -264,7 +257,6 @@ export default function ComparisonDashboard({ resultA, resultB, labelA, labelB }
           </div>
         </div>
       )}
-
       {/* Archetype */}
       {activeTab === "archetype" && (
         <div className="bg-white rounded-xl p-6 shadow-sm border">
@@ -293,8 +285,7 @@ export default function ComparisonDashboard({ resultA, resultB, labelA, labelB }
                         row.winner === "B" ? "bg-amber-100 text-amber-800" :
                         "bg-gray-100 text-gray-500"
                       }`}>
-                        {row.winner === "A" ? labelA : row.winner === "B" ? labelB : "Tie"}
-                      </span>
+                        {row.winner === "A" ? labelA : row.winner === "B" ? labelB : "Tie"}                      </span>
                     </td>
                   </tr>
                 ))}
@@ -324,8 +315,7 @@ export default function ComparisonDashboard({ resultA, resultB, labelA, labelB }
                   const winner = diff > 0 ? "B" : diff < 0 ? "A" : "Tie";
                   return (
                     <div key={rA.personaId} className={`border rounded-lg p-3 text-sm ${
-                      winner === "A" ? "border-l-4 border-l-green-700" :
-                      winner === "B" ? "border-l-4 border-l-amber-600" : ""
+                      winner === "A" ? "border-l-4 border-l-green-700" :                      winner === "B" ? "border-l-4 border-l-amber-600" : ""
                     }`}>
                       <div className="flex items-center justify-between mb-1">
                         <div>
@@ -333,11 +323,11 @@ export default function ComparisonDashboard({ resultA, resultB, labelA, labelB }
                           <span className="text-xs text-gray-400 ml-2">{rA.archetype} / {rA.channel.toUpperCase()}</span>
                         </div>
                         <div className="flex items-center gap-3 text-xs">
-                          <span className="font-mono font-bold" style={{ color: BAR_COLORS.a }}>{rA.purchaseIntent}/7</span>
+                          <span className="font-mono font-bold" style={{ color: BAR_COLORS.a }}>{rA.purchaseIntent}/10</span>
                           <span className={`font-semibold ${diff > 0 ? "text-amber-600" : diff < 0 ? "text-green-700" : "text-gray-400"}`}>
                             {diff > 0 ? `B+${diff}` : diff < 0 ? `A+${Math.abs(diff)}` : "Tie"}
                           </span>
-                          <span className="font-mono font-bold" style={{ color: BAR_COLORS.b }}>{rB.purchaseIntent}/7</span>
+                          <span className="font-mono font-bold" style={{ color: BAR_COLORS.b }}>{rB.purchaseIntent}/10</span>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
