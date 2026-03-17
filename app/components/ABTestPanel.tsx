@@ -26,7 +26,7 @@ const VARIABLE_OPTIONS: { key: keyof Formulation; label: string; min: number; ma
   { key: "fiberG", label: "Fiber", min: 0, max: 20, step: 1, unit: "g" },
   { key: "sugarG", label: "Sugar", min: 0, max: 25, step: 1, unit: "g" },
   { key: "totalGrams", label: "Total Weight", min: 20, max: 100, step: 1, unit: "g" },
-  { key: "cogsPerUnit", label: "COGS per Unit", min: 0.10, max: 3.00, step: 0.05, unit: "" },  { key: "msrpPerBar", label: "MSRP per Bar", min: 0.50, max: 8.00, step: 0.01, unit: "" },
+  { key: "cogsPerUnit", label: "COGS per Unit", min: 0.10, max: 1.00, step: 0.05, unit: "" },  { key: "msrpPerBar", label: "MSRP per Bar", min: 0.50, max: 8.00, step: 0.01, unit: "" },
   { key: "barCount", label: "Bar Count", min: 1, max: 48, step: 1, unit: " bars" },
 ];
 
@@ -68,7 +68,7 @@ function FormulationColumn({ title, color, formulation, onUpdate }: {
       <MiniSlider label="Sugar" value={formulation.sugarG} onChange={(v) => onUpdate("sugarG", v)} min={0} max={25} step={1} unit="g" />
       <hr className="my-2" />
       <MiniSlider label="Total Weight" value={formulation.totalGrams} onChange={(v) => onUpdate("totalGrams", v)} min={20} max={100} step={1} unit="g" />
-      <MiniSlider label="COGS" value={formulation.cogsPerUnit} onChange={(v) => onUpdate("cogsPerUnit", v)} min={0.10} max={3.00} step={0.05} unit="" />
+      <MiniSlider label="COGS" value={formulation.cogsPerUnit} onChange={(v) => onUpdate("cogsPerUnit", v)} min={0.10} max={1.00} step={0.05} unit="" />
       <MiniSlider label="MSRP" value={formulation.msrpPerBar} onChange={(v) => onUpdate("msrpPerBar", v)} min={0.50} max={8.00} step={0.01} unit="" />
       <MiniSlider label="Bar Count" value={formulation.barCount} onChange={(v) => onUpdate("barCount", v)} min={1} max={48} step={1} unit=" bars" />
     </div>

@@ -533,7 +533,7 @@ export default function Home() {
 
             <Slider label="Total Weight" value={formulation.totalGrams} onChange={(v) => update("totalGrams", v)}
               min={20} max={100} step={1} unit="g" />            <Slider label="COGS per Unit" value={formulation.cogsPerUnit} onChange={(v) => update("cogsPerUnit", v)}
-              min={0.10} max={3.00} step={0.05} unit="" help={`Margin: ${formulation.msrpPerBar > 0 ? (((formulation.msrpPerBar - formulation.cogsPerUnit) / formulation.msrpPerBar) * 100).toFixed(1) : 0}%`} />
+              min={0.10} max={1.00} step={0.05} unit="" help={`Margin: ${formulation.msrpPerBar > 0 ? (((formulation.msrpPerBar - formulation.cogsPerUnit) / formulation.msrpPerBar) * 100).toFixed(1) : 0}%`} />
             <Slider label="MSRP per Bar" value={formulation.msrpPerBar} onChange={(v) => update("msrpPerBar", v)}
               min={0.50} max={8.00} step={0.01} unit="" help={`${(formulation.msrpPerBar / formulation.cogsPerUnit).toFixed(1)}x markup on COGS`} />
             <Slider label="Bar Count" value={formulation.barCount} onChange={(v) => update("barCount", v)}
