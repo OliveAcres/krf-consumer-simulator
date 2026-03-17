@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { Formulation, SimulationResult, PersonaResponse } from "@/lib/types";
+import ChatPanel from "./components/ChatPanel";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -534,6 +535,7 @@ export default function Home() {
             </div>
           )}
           {!loading && result && <ResultsDashboard result={result} />}
+          {!loading && result && <ChatPanel result={result} />}
         </div>
       </div>
     </main>
