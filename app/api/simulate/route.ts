@@ -50,7 +50,7 @@ Dealbreakers: ${p.dealbreakers.join(", ")}
 Context: ${p.description}`
   )).join("\n\n");
 
-  const impliedRetail = formulation.cogsPerUnit * 2.8;
+  const impliedRetail = formulation.msrpPerBar || formulation.cogsPerUnit * 2.8;
   const caloriesPerGram = formulation.totalGrams > 0 ? (formulation.calories / formulation.totalGrams).toFixed(1) : "N/A";
   const proteinPct = formulation.totalGrams > 0 ? ((formulation.proteinG / formulation.totalGrams) * 100).toFixed(0) : "N/A";
 
@@ -105,6 +105,7 @@ function computeSummary(formulation: Formulation, responses: PersonaResponse[]):
     };
   }
 
+  // Extract common themes from feedback
   const allFeedback = responses.map((r) => r.feedback.toLowerCase());
   const allImprovements = responses.map((r) => r.suggestedImprovement.toLowerCase());
 
@@ -119,6 +120,7 @@ function computeSummary(formulation: Formulation, responses: PersonaResponse[]):
   const overallPI = avg(responses.map((r) => r.purchaseIntent));
   const overallRP = avg(responses.map((r) => r.repeatPurchase));
 
+  // Conversion rate estimation: purchase intent 4+ = potential buyer
   const potentialBuyers = responses.filter((r) => r.purchaseIntent >= 4).length;
   const conversionRate = (potentialBuyers / responses.length) * 100;
 
@@ -165,6 +167,7 @@ export async function POST(request: NextRequest) {
     const client = new Anthropic({ apiKey });
     const personas = generatePersonas();
 
+    // Process in batches of 20 to stay within token limits
     const batchSize = 20;
     const numBatches = Math.ceil(personas.length / batchSize);
     const allResponses: PersonaResponse[] = [];
@@ -182,11 +185,17 @@ export async function POST(request: NextRequest) {
       const text = message.content[0].type === "text" ? message.content[0].text : "";
 
       try {
+        // Strip any markdown code fences if present
         const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
         const parsed: PersonaResponse[] = JSON.parse(cleaned);
+        // Normalize channel to lowercase (Claude may return "AMAZON", "Amazon", etc.)
+        for (const r of parsed) {
+          r.channel = r.channel.toLowerCase() as PersonaResponse["channel"];
+        }
         allResponses.push(...parsed);
       } catch (parseError) {
         console.error(`Batch ${i} parse error:`, parseError, "Raw:", text.substring(0, 200));
+        // Generate fallback responses for this batch
         const batchPersonas = personas.slice(i * batchSize, (i + 1) * batchSize);
         for (const p of batchPersonas) {
           allResponses.push({

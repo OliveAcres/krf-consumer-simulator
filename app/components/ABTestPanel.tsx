@@ -24,7 +24,7 @@ const VARIABLE_OPTIONS: { key: keyof Formulation; label: string; min: number; ma
   { key: "proteinG", label: "Protein", min: 0, max: 35, step: 1, unit: "g" },
   { key: "fatG", label: "Fat", min: 0, max: 25, step: 1, unit: "g" },
   { key: "carbsG", label: "Carbs", min: 0, max: 50, step: 1, unit: "g" },
-  { key: "fiberG", label: "Fiber", min: 0, max: 15, step: 1, unit: "g" },
+  { key: "fiberG", label: "Fiber", min: 0, max: 20, step: 1, unit: "g" },
   { key: "sugarG", label: "Sugar", min: 0, max: 25, step: 1, unit: "g" },
   { key: "totalGrams", label: "Total Weight", min: 20, max: 100, step: 1, unit: "g" },
   { key: "cogsPerUnit", label: "COGS per Unit", min: 0.10, max: 3.00, step: 0.05, unit: "" },
@@ -67,7 +67,7 @@ function FormulationColumn({ title, color, formulation, onUpdate }: {
       <MiniSlider label="Protein" value={formulation.proteinG} onChange={(v) => onUpdate("proteinG", v)} min={0} max={35} step={1} unit="g" />
       <MiniSlider label="Fat" value={formulation.fatG} onChange={(v) => onUpdate("fatG", v)} min={0} max={25} step={1} unit="g" />
       <MiniSlider label="Carbs" value={formulation.carbsG} onChange={(v) => onUpdate("carbsG", v)} min={0} max={50} step={1} unit="g" />
-      <MiniSlider label="Fiber" value={formulation.fiberG} onChange={(v) => onUpdate("fiberG", v)} min={0} max={15} step={1} unit="g" />
+      <MiniSlider label="Fiber" value={formulation.fiberG} onChange={(v) => onUpdate("fiberG", v)} min={0} max={20} step={1} unit="g" />
       <MiniSlider label="Sugar" value={formulation.sugarG} onChange={(v) => onUpdate("sugarG", v)} min={0} max={25} step={1} unit="g" />
       <hr className="my-2" />
       <MiniSlider label="Total Weight" value={formulation.totalGrams} onChange={(v) => onUpdate("totalGrams", v)} min={20} max={100} step={1} unit="g" />
@@ -160,7 +160,8 @@ export default function ABTestPanel() {
       const dataB: SimulationResult = await resB.json();
 
       setProgress(100);
-      setTimeoutetProgress((pre  setResultA(dataA);
+      setTimeout(() => {
+        setResultA(dataA);
         setResultB(dataB);
       }, 300);
     } catch (err) {

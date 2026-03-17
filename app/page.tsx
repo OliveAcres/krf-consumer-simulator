@@ -536,7 +536,7 @@ export default function Home() {
             <Slider label="Carbs" value={formulation.carbsG} onChange={(v) => update("carbsG", v)}
               min={0} max={50} step={1} unit="g" />
             <Slider label="Fiber" value={formulation.fiberG} onChange={(v) => update("fiberG", v)}
-              min={0} max={15} step={1} unit="g" />
+              min={0} max={20} step={1} unit="g" />
             <Slider label="Sugar" value={formulation.sugarG} onChange={(v) => update("sugarG", v)}
               min={0} max={25} step={1} unit="g" />
 
